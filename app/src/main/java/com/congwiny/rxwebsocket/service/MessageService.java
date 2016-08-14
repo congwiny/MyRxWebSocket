@@ -5,14 +5,23 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.congwiny.rxwebsocket.RxWebSocket;
+import com.congwiny.rxwebsocket.constants.ApiConstants;
+import com.congwiny.rxwebsocket.event.ConnEvent;
+
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class MessageService extends Service {
 
     private static final String TAG = MessageService.class.getSimpleName();
     private final WebSocketConnection mConnection = new WebSocketConnection();
+
+    private RxWebSocket mRxWebSocket = new RxWebSocket(ApiConstants.WS_URI);
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -23,8 +32,31 @@ public class MessageService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        start();
+        //start();
+
+        subscribeWebSocket();
     }
+
+    private void subscribeWebSocket() {
+        mRxWebSocket.webSocketObserable()
+                .subscribe(new Subscriber<ConnEvent>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "onError=" + e);
+                    }
+
+                    @Override
+                    public void onNext(ConnEvent connEvent) {
+                        Log.e(TAG, "onNext=" + connEvent);
+                    }
+                });
+    }
+
 
     private void start() {
 
@@ -61,7 +93,7 @@ public class MessageService extends Service {
             });
         } catch (WebSocketException e) {
 
-            Log.e(TAG, "exception = "+e.toString());
+            Log.e(TAG, "exception = " + e.toString());
         }
     }
 

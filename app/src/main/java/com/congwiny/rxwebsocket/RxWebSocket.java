@@ -1,5 +1,7 @@
 package com.congwiny.rxwebsocket;
 
+import android.util.Log;
+
 import com.congwiny.rxwebsocket.event.ConnEvent;
 import com.congwiny.rxwebsocket.exception.WebSocketCloseException;
 import com.congwiny.rxwebsocket.event.MessageBinaryEvent;
@@ -10,16 +12,21 @@ import com.congwiny.rxwebsocket.event.MessageRawTextEvent;
 import com.congwiny.rxwebsocket.event.MessageTextEvent;
 
 
+import java.util.concurrent.TimeUnit;
+
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by congwiny on 16/8/14.
  */
 public class RxWebSocket {
+    private static final String TAG = RxWebSocket.class.getSimpleName();
     private final WebSocketConnection mConnection = new WebSocketConnection();
 
     private String mWsUri;
@@ -42,7 +49,8 @@ public class RxWebSocket {
                         @Override
                         public void onClose(int code, String reason) {
                             super.onClose(code, reason);
-                            subscriber.onNext(new ConnCloseEvent(code, reason));
+                            System.out.println("websocket onClose");
+                            // subscriber.onNext(new ConnCloseEvent(code, reason));
                             subscriber.onError(new WebSocketCloseException(code, reason));
                         }
 
@@ -65,9 +73,28 @@ public class RxWebSocket {
                     });
                 } catch (WebSocketException e) {
                     e.printStackTrace();
-                    //subscriber.onError(e);
+                    subscriber.onError(e);
                 }
             }
-        });
+        }).retryWhen(repeatDuration(3, TimeUnit.SECONDS));
+    }
+
+    private Func1<Observable<? extends Throwable>, Observable<?>> repeatDuration(final long delay,
+                                                                                 final TimeUnit timeUnit) {
+        return new Func1<Observable<? extends Throwable>, Observable<?>>() {
+            @Override
+            public Observable<?> call(Observable<? extends Throwable> attemps) {
+                return attemps
+                        .flatMap(new Func1<Throwable, Observable<?>>() {
+                            @Override
+                            public Observable<?> call(Throwable aLong) {
+                                if (aLong instanceof WebSocketCloseException) {
+                                    return Observable.timer(delay, timeUnit, Schedulers.io());
+                                }
+                                return Observable.error(aLong);
+                            }
+                        });
+            }
+        };
     }
 }
