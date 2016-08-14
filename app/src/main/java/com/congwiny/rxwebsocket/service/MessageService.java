@@ -13,6 +13,7 @@ import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
 import rx.Subscriber;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -22,6 +23,8 @@ public class MessageService extends Service {
     private final WebSocketConnection mConnection = new WebSocketConnection();
 
     private RxWebSocket mRxWebSocket = new RxWebSocket(ApiConstants.WS_URI);
+
+    private Subscription mSub;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -38,7 +41,7 @@ public class MessageService extends Service {
     }
 
     private void subscribeWebSocket() {
-        mRxWebSocket.webSocketObserable()
+        mSub = mRxWebSocket.webSocketObserable()
                 .subscribe(new Subscriber<ConnEvent>() {
                     @Override
                     public void onCompleted() {
@@ -97,4 +100,13 @@ public class MessageService extends Service {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (!mSub.isUnsubscribed()) {
+            mSub.unsubscribe();
+        }
+
+    }
 }

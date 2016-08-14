@@ -17,4 +17,13 @@ public class MainActivity extends AppCompatActivity {
         intent.setClass(this, MessageService.class);
         startService(intent);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent();
+        intent.setClass(this, MessageService.class);
+
+        stopService(intent);
+    }
 }

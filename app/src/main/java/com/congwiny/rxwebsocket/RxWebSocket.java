@@ -19,6 +19,7 @@ import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
 import rx.Observable;
 import rx.Subscriber;
+import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
@@ -76,7 +77,14 @@ public class RxWebSocket {
                     subscriber.onError(e);
                 }
             }
-        }).retryWhen(repeatDuration(3, TimeUnit.SECONDS));
+        })
+                .retryWhen(repeatDuration(3, TimeUnit.SECONDS))
+                .doOnUnsubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        mConnection.disconnect();
+                    }
+                });
     }
 
     private Func1<Observable<? extends Throwable>, Observable<?>> repeatDuration(final long delay,
