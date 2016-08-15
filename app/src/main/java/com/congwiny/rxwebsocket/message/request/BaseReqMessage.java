@@ -7,14 +7,14 @@ import com.google.gson.annotations.SerializedName;
  */
 public abstract class BaseReqMessage {
 
-    @SerializedName("type")
-    protected int type;
+    @SerializedName("event")
+    protected int event;
 
-    public int getType() {
-        return type;
+    public int getEvent() {
+        return event;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public void setEvent(int event) {
+        this.event = event;
     }
 }

@@ -1,15 +1,10 @@
 package com.congwiny.rxwebsocket;
 
-import android.util.Log;
-
 import com.congwiny.rxwebsocket.event.ConnEvent;
 import com.congwiny.rxwebsocket.event.MessageTextEvent;
-import com.congwiny.rxwebsocket.exception.ObjectParseException;
 import com.congwiny.rxwebsocket.message.response.BaseRespMessage;
-import com.congwiny.rxwebsocket.message.response.ExceptionRespMsg;
-import com.congwiny.rxwebsocket.parser.ObjectSerializer;
+import com.congwiny.rxwebsocket.utils.RespMsgMaker;
 
-import de.tavendo.autobahn.WebSocketConnection;
 import rx.Observable;
 import rx.Subscriber;
 
@@ -19,13 +14,9 @@ import rx.Subscriber;
 public class RxRespWebSocket {
 
     private final RxWebSocket mRxWebSocket;
-    private final ObjectSerializer mObjectSerializer;
-    private final WebSocketConnection mSocketConn;
 
-    public RxRespWebSocket(RxWebSocket rxWebSocket, ObjectSerializer objectSerializer) {
+    public RxRespWebSocket(RxWebSocket rxWebSocket) {
         this.mRxWebSocket = rxWebSocket;
-        this.mObjectSerializer = objectSerializer;
-        this.mSocketConn = mRxWebSocket.getWebSocketConn();
     }
 
     public Observable<BaseRespMessage> webSocketObservable() {
@@ -73,12 +64,10 @@ public class RxRespWebSocket {
                             }
 
                             private BaseRespMessage parseMessage(String message) {
-                                final BaseRespMessage respMessage;
                                 try {
-                                    respMessage = (BaseRespMessage) mObjectSerializer.serialize(message);
-                                    return respMessage;
-                                } catch (ObjectParseException e) {
-                                    return new ExceptionRespMsg(message, e);
+                                    return RespMsgMaker.fromJson(message);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
                                 }
                             }
 

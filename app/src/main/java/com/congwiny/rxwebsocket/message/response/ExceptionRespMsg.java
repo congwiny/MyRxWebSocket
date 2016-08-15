@@ -1,6 +1,6 @@
 package com.congwiny.rxwebsocket.message.response;
 
-import com.congwiny.rxwebsocket.constants.MessageType;
+import com.congwiny.rxwebsocket.constants.EventType;
 
 /**
  * Created by congwiny on 2016/8/15.
@@ -10,7 +10,7 @@ public class ExceptionRespMsg extends BaseRespMessage {
     private String message;
 
     public ExceptionRespMsg(String message, Throwable error) {
-        type = MessageType.ERROR;
+        event = EventType.ERROR;
         this.error = error;
         this.message = message;
     }

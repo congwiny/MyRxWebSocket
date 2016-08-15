@@ -11,11 +11,6 @@ import com.congwiny.rxwebsocket.constants.ApiConstants;
 import com.congwiny.rxwebsocket.event.ConnEvent;
 import com.congwiny.rxwebsocket.event.MessageTextEvent;
 import com.congwiny.rxwebsocket.message.response.BaseRespMessage;
-import com.congwiny.rxwebsocket.parser.GsonObjectSerializer;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import rx.Scheduler;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -45,14 +40,14 @@ public class MessageService extends Service {
         super.onCreate();
         //start();
 
-        //subscribeWebSocket();
+         subscribeWebSocket();
 
-        subscribeWebSocketJson();
+       // subscribeWebSocketJson();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent.getAction() != null) {
+        if (intent != null && intent.getAction() != null) {
             switch (intent.getAction()) {
                 case ACTION_START_SERVICE:
                     break;
@@ -73,12 +68,7 @@ public class MessageService extends Service {
 
     private void subscribeWebSocketJson() {
 
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(BaseRespMessage.class, new BaseRespMessage.Deserializer())
-                .create();
-
-        GsonObjectSerializer serializer = new GsonObjectSerializer(gson, BaseRespMessage.class);
-        RxRespWebSocket socket = new RxRespWebSocket(mRxWebSocket, serializer);
+        RxRespWebSocket socket = new RxRespWebSocket(mRxWebSocket);
 
         mSub = socket.webSocketObservable()
                 .subscribeOn(Schedulers.io())

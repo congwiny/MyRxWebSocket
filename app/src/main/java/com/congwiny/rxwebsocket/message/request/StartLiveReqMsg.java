@@ -6,16 +6,16 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by congwiny on 2016/8/15.
  */
-public class JoinRoomReqMsg extends BaseReqMessage {
-
+public class StartLiveReqMsg extends BaseReqMessage{
     @SerializedName("user_id")
     private int userId;
     @SerializedName("room_id")
     private int roomId;
+    @SerializedName("live_id")
+    private int liveId;
 
-
-    public JoinRoomReqMsg() {
-        event = EventType.JOIN_ROOM_REQ;
+    public StartLiveReqMsg(){
+        event = EventType.START_LIVE_REQ;
     }
 
     public int getUserId() {
@@ -32,5 +32,13 @@ public class JoinRoomReqMsg extends BaseReqMessage {
 
     public void setRoomId(int roomId) {
         this.roomId = roomId;
+    }
+
+    public int getLiveId() {
+        return liveId;
+    }
+
+    public void setLiveId(int liveId) {
+        this.liveId = liveId;
     }
 }

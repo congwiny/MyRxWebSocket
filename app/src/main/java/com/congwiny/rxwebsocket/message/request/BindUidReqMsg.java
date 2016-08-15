@@ -1,6 +1,6 @@
 package com.congwiny.rxwebsocket.message.request;
 
-import com.congwiny.rxwebsocket.constants.MessageType;
+import com.congwiny.rxwebsocket.constants.EventType;
 import com.google.gson.annotations.SerializedName;
 
 /**
@@ -11,7 +11,7 @@ public class BindUidReqMsg extends BaseReqMessage {
     protected int userId;
 
     public BindUidReqMsg() {
-        type = MessageType.BIND_USER;
+        event = EventType.BIND_USER_REQ;
     }
 
     public int getUserId() {
