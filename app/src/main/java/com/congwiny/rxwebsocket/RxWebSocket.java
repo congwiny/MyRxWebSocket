@@ -1,12 +1,8 @@
 package com.congwiny.rxwebsocket;
 
-import android.util.Log;
-
 import com.congwiny.rxwebsocket.event.ConnEvent;
 import com.congwiny.rxwebsocket.exception.WebSocketCloseException;
 import com.congwiny.rxwebsocket.event.MessageBinaryEvent;
-import com.congwiny.rxwebsocket.event.ConnCloseEvent;
-import com.congwiny.rxwebsocket.event.MessageEvent;
 import com.congwiny.rxwebsocket.event.ConnOpenEvent;
 import com.congwiny.rxwebsocket.event.MessageRawTextEvent;
 import com.congwiny.rxwebsocket.event.MessageTextEvent;
@@ -57,7 +53,6 @@ public class RxWebSocket {
 
                         @Override
                         public void onTextMessage(String payload) {
-
                             //payload 有点--可能是错误。。
                             subscriber.onNext(new MessageTextEvent(mConnection, payload));
                         }
@@ -104,5 +99,14 @@ public class RxWebSocket {
                         });
             }
         };
+    }
+
+
+    public WebSocketConnection getWebSocketConn() {
+        return mConnection;
+    }
+
+    public void sendTextMessage(String message) {
+        mConnection.sendTextMessage(message);
     }
 }

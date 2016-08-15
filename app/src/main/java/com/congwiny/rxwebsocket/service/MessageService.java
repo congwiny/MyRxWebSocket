@@ -5,22 +5,30 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.congwiny.rxwebsocket.RxRespWebSocket;
 import com.congwiny.rxwebsocket.RxWebSocket;
 import com.congwiny.rxwebsocket.constants.ApiConstants;
 import com.congwiny.rxwebsocket.event.ConnEvent;
+import com.congwiny.rxwebsocket.event.MessageTextEvent;
+import com.congwiny.rxwebsocket.message.response.BaseRespMessage;
+import com.congwiny.rxwebsocket.parser.GsonObjectSerializer;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import de.tavendo.autobahn.WebSocketConnection;
-import de.tavendo.autobahn.WebSocketException;
-import de.tavendo.autobahn.WebSocketHandler;
+import rx.Scheduler;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
 public class MessageService extends Service {
 
+    public static final String ACTION_START_SERVICE = "action_start_service";
+    public static final String ACTION_STOP_SERVICE = "action_stop_service";
+    public static final String ACTION_SEND_MESSAGE = "action_send_message";
+
     private static final String TAG = MessageService.class.getSimpleName();
-    private final WebSocketConnection mConnection = new WebSocketConnection();
 
     private RxWebSocket mRxWebSocket = new RxWebSocket(ApiConstants.WS_URI);
 
@@ -37,8 +45,53 @@ public class MessageService extends Service {
         super.onCreate();
         //start();
 
-        subscribeWebSocket();
+        //subscribeWebSocket();
+
+        subscribeWebSocketJson();
     }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent.getAction() != null) {
+            switch (intent.getAction()) {
+                case ACTION_START_SERVICE:
+                    break;
+                case ACTION_STOP_SERVICE:
+                    break;
+                case ACTION_SEND_MESSAGE:
+                    sendTextMessage();
+                    break;
+            }
+        }
+        return START_STICKY;
+    }
+
+    private void sendTextMessage() {
+        //随便发送点东西到服务器
+        mRxWebSocket.sendTextMessage("abcd");
+    }
+
+    private void subscribeWebSocketJson() {
+
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(BaseRespMessage.class, new BaseRespMessage.Deserializer())
+                .create();
+
+        GsonObjectSerializer serializer = new GsonObjectSerializer(gson, BaseRespMessage.class);
+        RxRespWebSocket socket = new RxRespWebSocket(mRxWebSocket, serializer);
+
+        mSub = socket.webSocketObservable()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<BaseRespMessage>() {
+                    @Override
+                    public void call(BaseRespMessage baseRespMessage) {
+                        Log.e(TAG, "message=" + baseRespMessage);
+                    }
+                });
+
+    }
+
 
     private void subscribeWebSocket() {
         mSub = mRxWebSocket.webSocketObserable()
@@ -55,49 +108,30 @@ public class MessageService extends Service {
 
                     @Override
                     public void onNext(ConnEvent connEvent) {
-                        Log.e(TAG, "onNext=" + connEvent);
+
+                        switch (connEvent.getEventType()) {
+                            case ConnEvent.CONN_OPEN_EVENT:
+                                Log.e(TAG, "conn open event");
+                                String message = "{\n" +
+                                        "    \"type\": 7,\n" +
+                                        "    \"user_id\": 100015\n" +
+                                        "}";
+
+                                Log.e(TAG, "message=" + message);
+                                mRxWebSocket.sendTextMessage(message);
+                                break;
+                            case ConnEvent.CONN_CLOSE_EVENT:
+                                break;
+                            case ConnEvent.MESSAGE_BINARY_EVENT:
+                                break;
+                            case ConnEvent.MESSAGE_TEXT_EVENT:
+                                MessageTextEvent textEvent = (MessageTextEvent) connEvent;
+                                Log.e(TAG, "textEvent=" + textEvent.payload);
+                                break;
+
+                        }
                     }
                 });
-    }
-
-
-    private void start() {
-
-        final String wsuri = "ws://47.89.37.30:7272";
-
-        try {
-            mConnection.connect(wsuri, new WebSocketHandler() {
-
-                @Override
-                public void onOpen() {
-                    Log.e(TAG, "Status: Connected to " + wsuri);
-                    mConnection.sendTextMessage("Hello, world!");
-                }
-
-                @Override
-                public void onTextMessage(String payload) {
-                    Log.e(TAG, "Got echo: " + payload);
-                }
-
-                @Override
-                public void onClose(int code, String reason) {
-                    Log.e(TAG, "Connection lost.");
-                }
-
-                @Override
-                public void onBinaryMessage(byte[] payload) {
-                    super.onBinaryMessage(payload);
-                }
-
-                @Override
-                public void onRawTextMessage(byte[] payload) {
-                    super.onRawTextMessage(payload);
-                }
-            });
-        } catch (WebSocketException e) {
-
-            Log.e(TAG, "exception = " + e.toString());
-        }
     }
 
     @Override

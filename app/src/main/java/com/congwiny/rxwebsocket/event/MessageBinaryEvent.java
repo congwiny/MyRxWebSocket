@@ -9,7 +9,7 @@ public class MessageBinaryEvent extends MessageEvent {
     public byte[] payload;
 
     public MessageBinaryEvent(WebSocketConnection connection, byte[] payload) {
-        super(connection);
+        super(connection,MESSAGE_BINARY_EVENT);
         this.payload = payload;
     }
 }

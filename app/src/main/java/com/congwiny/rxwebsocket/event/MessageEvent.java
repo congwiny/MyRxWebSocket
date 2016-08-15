@@ -5,14 +5,15 @@ import de.tavendo.autobahn.WebSocketConnection;
 /**
  * Created by congwiny on 16/8/14.
  */
-public class MessageEvent extends ConnEvent{
+public abstract class MessageEvent extends ConnEvent {
     private WebSocketConnection mConnection;
 
-    public MessageEvent(WebSocketConnection mConnection) {
+    public MessageEvent(WebSocketConnection mConnection, int eventType) {
+        super(eventType);
         this.mConnection = mConnection;
     }
 
-    public WebSocketConnection getWebSocketConn(){
+    public WebSocketConnection getWebSocketConn() {
         return mConnection;
     }
 

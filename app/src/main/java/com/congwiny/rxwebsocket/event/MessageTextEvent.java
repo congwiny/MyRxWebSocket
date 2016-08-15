@@ -9,8 +9,8 @@ public class MessageTextEvent extends MessageEvent {
     public String payload;
 
 
-    public MessageTextEvent(WebSocketConnection connection,String payload) {
-        super(connection);
+    public MessageTextEvent(WebSocketConnection connection, String payload) {
+        super(connection, MESSAGE_TEXT_EVENT);
         this.payload = payload;
     }
 

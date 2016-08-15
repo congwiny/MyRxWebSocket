@@ -9,6 +9,7 @@ public class ConnCloseEvent extends ConnEvent {
     public String reason;
 
     public ConnCloseEvent(int code, String reason) {
+        super(CONN_CLOSE_EVENT);
         this.code = code;
         this.reason = reason;
     }

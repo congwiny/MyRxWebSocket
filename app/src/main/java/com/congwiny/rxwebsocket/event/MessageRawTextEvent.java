@@ -5,11 +5,11 @@ import de.tavendo.autobahn.WebSocketConnection;
 /**
  * Created by congwiny on 16/8/14.
  */
-public class MessageRawTextEvent extends MessageEvent{
+public class MessageRawTextEvent extends MessageEvent {
     public byte[] payload;
 
-    public MessageRawTextEvent(WebSocketConnection connection,byte[]payload) {
-        super(connection);
+    public MessageRawTextEvent(WebSocketConnection connection, byte[] payload) {
+        super(connection, MESSAGE_RAW_EVENT);
         this.payload = payload;
     }
 }
